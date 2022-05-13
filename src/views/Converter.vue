@@ -1,6 +1,6 @@
 
 <template>
-    <div class="container mx-auto text-xl">
+    <div class="container mx-auto text-xl p-5">
         <h1 class="text-3xl font-semibold">Genshin Lyre Parser (Pre-Alpha)</h1>
         <div class="grid grid-cols-1 sm:grid-cols-2 items-center my-5 gap-4">
             <video controls ref="lyreVideo">
@@ -15,7 +15,7 @@
             >
             </canvas>
         </div>
-        <div class="flex flex-row gap-4 items-center">
+        <div class="flex flex-col sm:flex-row gap-4 sm:items-center">
             <button class="bg-gray-500 text-white p-5 rounded-xl shadow-lg">Browse MP4</button>
             <button
                 class="bg-gray-500 text-white p-5 rounded-xl shadow-lg"
@@ -26,7 +26,7 @@
                 @click="drawExample(lyreCanvas)"
             >Draw Example & Note Grid</button>
         </div>
-            <p class="text-semibold text-2xl">Notes: <strong>{{ noteHits.join(" ") }}</strong></p>
+            <p class="text-semibold text-2xl my-2">Notes: <strong>{{ noteHits.join(" ") }}</strong></p>
     </div>
 </template>
 
@@ -42,9 +42,21 @@ import { fetchImage, deltaE } from '../utils/CanvasUtils';
 const lyreCanvas = ref(null);
 const lyreVideo = ref(null);
 
-
 let noteHits = ref([]);
-let noteTimeouts = ref([]);
+let noteTimeouts = [];
+let noteBundle = [];
+let noteCurrentFrame = ref(0);
+
+/**
+ * Resets all the global values associated
+ * with the note grid.
+ */
+function localReset() {
+    noteHits.value = [];
+    noteTimeouts = [];
+    noteBundle = [];
+    noteCurrentFrame.value = 0;
+}
 
 onMounted(() => {
     sanityChecks(lyreCanvas.value);
@@ -57,7 +69,7 @@ onMounted(() => {
         shouldScan = true;
         function step() {
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-            drawNoteDetection(canvas, noteTimeouts.value, noteHits.value);
+            drawNoteDetection(canvas, noteHits.value, noteTimeouts, noteBundle, noteCurrentFrame);
             if (shouldScan) {
                 requestAnimationFrame(step);
             }
@@ -86,6 +98,8 @@ const keyMap = [
  * @param {HTMLCanvasElement} canvas
  */
 function sanityChecks(canvas) {
+    // Draw a small circle and a line, if these look bad,
+    // you probably need to change the canvas size
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "red"
@@ -104,29 +118,34 @@ function sanityChecks(canvas) {
  * @param {HTMLCanvasElement} canvas
  */
 async function drawExample(canvas) {
-    // Displaying the image
+    localReset();
+
+    // Fetching the image
     const image = await fetchImage(lyrePlayerPressedImg);
 
+    // Displaying the image
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-    drawNoteDetection(canvas, noteTimeouts.value, noteHits.value);
+
+    // Drawing the notes
+    drawNoteDetection(canvas, noteHits.value, noteTimeouts, noteBundle, noteCurrentFrame);
 }
 
 /**
  * This is the function that draws the lyre
  * note grid on the canvas.
  * @param {HTMLCanvasElement} canvas
- * @param {*} noteTimeoutsRef - Reference to the note timeouts array
  * @param {*} noteHitsRef - Reference to the note hits that act as the permanent
  * `noteBundle` storage, this is where they get added to
+ * @param {*} noteTimeoutsRef - Reference to the note timeouts array
  * @param {*} noteBundleRef - Reference to the current note bundle which will be consumed
  * by adding it to `noteHitsRef` when `nodeCurrentFrameRef` reaches 0
  * @param {*} noteCurrentFrameRef - Reference to the current frame count which will be
  * consumed by incrementing it by 1 every frame until it reaches `frameBundleSize`
  * @param {*} [frameBundleSize=3] - The amount of frames it takes for a `noteBundle` to be assembled
  */
-async function drawNoteDetection(canvas, noteTimeoutsRef, noteHitsRef, noteBundleRef, noteCurrentFrameRef, frameBundleSize = 3) {
+async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundleRef, noteCurrentFrameRef, frameBundleSize = 5) {
     // Getting context
     const ctx = canvas.getContext('2d');
     //ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -141,6 +160,10 @@ async function drawNoteDetection(canvas, noteTimeoutsRef, noteHitsRef, noteBundl
 
     function noteHasTimeout(note) {
         return !!noteTimeoutsRef.find(t => t.noteIndex === `${note[0]}-${note[1]}`);
+    }
+
+    function getTimeout(note) {
+        return noteTimeoutsRef.find(t => t.noteIndex === `${note[0]}-${note[1]}`).timeout;
     }
 
     let detectedNotes = [];
@@ -165,8 +188,10 @@ async function drawNoteDetection(canvas, noteTimeoutsRef, noteHitsRef, noteBundl
             // We optionally offset the position to be at the center of the note
             //pos[0] += 35;
 
+            // We skip notes that have already been pressed recently
+            // and we fill those places with green.
             if (noteHasTimeout([i, j])) {
-                console.log(`[NoteGrid] Skipping note ${noteMap[i]}${j+1}`);
+                console.log(`[NoteGrid] Skipping note ${noteMap[i]}${j+1} (${getTimeout([i, j])})`);
                 ctx.fillStyle = "green";
                 ctx.beginPath();
                 ctx.arc(pos[0], pos[1], circleFillRadius, 0, 2 * Math.PI);
@@ -175,12 +200,26 @@ async function drawNoteDetection(canvas, noteTimeoutsRef, noteHitsRef, noteBundl
                 continue;
             }
             const rgb = [pixel[0], pixel[1], pixel[2]];
+
+            // DeltaE is a measure of how similar the colors are
+            // see https://www.viewsonic.com/library/creative-work/what-is-delta-e-and-why-is-it-important-for-color-accuracy/
+            // for more information on how this works.
+
+            // <= 1.0: Not perceptible by the human eye
+            // 1-2: Perceptible through close observation
+            // 2-10: Perceptible at a glance
+            // 11-49: Colors are more similar than the opposite
+            // 100: Colors are exactly the opposite
             const similarity = deltaE(rgb, desiredRGB);
+
             //console.log(`[NoteGrid] [${i+1}, ${j+1}] - ${rgb} (${similarity})`);
+
+            // If the colors are similar enough, we draw the note with green
+            // and add it to the note bundle, while also giving it a timeout,
+            // so it won't duplicate. Otherwise draw with red.
             if (similarity < 7) {
                 ctx.fillStyle = "green";
-                console.log(`[NoteGrid] Found hit!`);
-                //noteHits.value.push(`${noteMap[j]}${i+1}`);
+                console.log(`[NoteGrid] Found hit at ${noteMap[i]}${j+1}`);
                 detectedNotes.push(keyMap[i][j]);
                 noteTimeoutsRef.push({ noteIndex: `${i}-${j}`, timeout: noteTimeoutFrames });
                 console.log(`[NoteGrid] Set timeout of ${noteTimeoutFrames} frames for ${i}/${j} (${noteMap[j]}${i+1})`);
@@ -192,8 +231,31 @@ async function drawNoteDetection(canvas, noteTimeoutsRef, noteHitsRef, noteBundl
         }
     }
 
-    if (detectedNotes.length === 0) return;
-    noteHitsRef.push(detectedNotes.length === 1 ? detectedNotes[0] : `(${detectedNotes.join(', ')})`);
+    // If there are any notes, we add them to the global bundle
+    if (detectedNotes.length >= 1) {
+        console.log(`[NoteGrid] Pushing ${detectedNotes.length} notes to ${noteBundleRef}!`);
+        noteBundleRef.push(...detectedNotes);
+    }
+
+    //console.log(`[NoteGrid] CurrentFrame: ${noteCurrentFrameRef.value} | BS: ${frameBundleSize}`);
+    //console.log(`[NoteGrid] #1 NoteBundle: ${noteBundleRef} | DetectedNotes: ${detectedNotes}`);
+    if (noteCurrentFrameRef.value === 0) {
+        // We reset the frame bundle because we reached the limit
+        noteCurrentFrameRef.value = frameBundleSize;
+
+        // If there are any notes, we push them with the correct formatting
+        if (noteBundleRef.length === 0) return;
+        noteHitsRef.push(noteBundleRef.length > 1 ? `(${noteBundleRef.join(', ')})` : noteBundleRef[0]);
+
+        // We empty the array, this is the only way that works
+        // when trying to keep the reference type.
+        noteBundleRef = noteBundleRef.splice(0, noteBundleRef.length)
+
+        console.log(`[NoteGrid] Final NoteBundle: ${noteBundleRef}`);
+        console.log(`[NoteGrid] Added bundle to noteHits`);
+    } else {
+        noteCurrentFrameRef.value--;
+    }
 }
 </script>
 
