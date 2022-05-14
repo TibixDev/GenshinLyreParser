@@ -1,28 +1,28 @@
 
 <template>
     <div class="container mx-auto text-xl p-5">
-        <h1 class="text-3xl font-semibold">Genshin Lyre Parser (Pre-Alpha)</h1>
+        <h1 class="text-4xl font-semibold border-b-2 border-indigo-500 pb-2">Genshin Lyre Parser (Alpha)</h1>
         <div class="grid grid-cols-1 sm:grid-cols-2 items-center my-5 gap-4">
             <video controls ref="lyreVideo">
                 <source :src="genshinLyreVid" type="video/mp4">
             </video>
             <canvas
-                id="lyreCanvas"
+                id="lyre-canvas"
                 ref="lyreCanvas"
                 width="1920"
                 height="1080"
-                class="rounded-md border-4 border-gray-400 mx-auto my-3"
+                class="rounded-md border-4 border-indigo-400 mx-auto my-3"
             >
             </canvas>
         </div>
         <div class="flex flex-col sm:flex-row gap-4 sm:items-center">
-            <button class="bg-gray-500 text-white p-5 rounded-xl shadow-lg">Browse MP4</button>
+            <button class="lyre-button">Browse MP4</button>
             <button
-                class="bg-gray-500 text-white p-5 rounded-xl shadow-lg"
+                class="lyre-button"
                 @click="sanityChecks(lyreCanvas)"
             >Canvas Sanity Check</button>
             <button
-                class="bg-gray-500 text-white p-5 rounded-xl shadow-lg"
+                class="lyre-button"
                 @click="drawExample(lyreCanvas)"
             >Draw Example & Note Grid</button>
         </div>
@@ -30,11 +30,23 @@
     </div>
 </template>
 
+<style>
+#lyre-canvas {
+    aspect-ratio: 16/9;
+    width: 100%;
+}
+
+.lyre-button {
+    @apply bg-violet-500 text-white p-4 rounded-xl shadow-lg transition ease-in-out duration-500
+    hover:bg-violet-600;
+}
+</style>
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import lyrePlayerImg from '../assets/lyreplayer.png';
 import lyrePlayerPressedImg from '../assets/lyreplayer_pressed.png';
-import genshinLyreVid from '../assets/genshin_lyre.mp4';
+import genshinLyreVid from '../assets/genshin_lit_lyre.mp4';
 import { fetchImage, deltaE } from '../utils/CanvasUtils';
 
 // Vue will automatically assign this to the canvas
@@ -258,10 +270,3 @@ async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundl
     }
 }
 </script>
-
-<style>
-#lyreCanvas {
-    aspect-ratio: 16/9;
-    width: 100%;
-}
-</style>

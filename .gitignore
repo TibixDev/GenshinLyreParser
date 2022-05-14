@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local
+src/assets/*.mp4
+src/assets/*.webm
