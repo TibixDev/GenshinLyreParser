@@ -1,0 +1,73 @@
+<template>
+    <template v-for="note, noteIndex in notes" :key="noteIndex">
+        <span v-if="typeof note[0] === 'number'" :class="constructNoteClass(note)">
+            {{ constructNote(note) + " "}} 
+        </span>
+        <span v-else>
+            (
+            <template v-for="subNote, subNoteIndex in note" :key="subNoteIndex">
+                <span :class="constructNoteClass(subNote)">
+                    {{ constructNote(subNote) }}
+                </span>
+                <template v-if="subNoteIndex !== note.length - 1">, </template>
+            </template>
+            )
+        </span>
+    </template>
+</template>
+
+<script setup>
+
+const props = defineProps({
+    notes: {
+        type: Array,
+        default: () => []
+    },
+    displayType: {
+        // can be pc, mobile, xbox, ps
+        type: String,
+        default: 'mobile'
+    }
+});
+
+function constructNote(note, displayType=props.displayType) {
+    switch (displayType) {
+        case 'pc':
+            return keyMap[note[0]][note[1]];
+        case 'mobile':
+            return noteMap[note[1]] + (note[0] + 1);
+        case 'xbox':
+            return "TBD";
+        case 'ps':
+            return "TBD";
+        default:
+            return note;
+    }
+}
+
+function constructNoteClass(note) {
+    const colorMap = ["teal", "cyan", "sky"]
+    return `text-${colorMap[note[0]]}-${note[1]+1}00`;
+    // Classlist
+    // text-teal-100 text-teal-200 text-teal-300 text-teal-400 text-teal-500 text-teal-600 text-teal-700 text-teal-800 text-teal-900
+    // text-cyan-100 text-cyan-200 text-cyan-300 text-cyan-400 text-cyan-500 text-cyan-600 text-cyan-700 text-cyan-800 text-cyan-900
+    // text-sky-100 text-sky-200 text-sky-300 text-sky-400 text-sky-500 text-sky-600 text-sky-700 text-sky-800 text-sky-900
+}
+
+const noteMap = [
+    "Do", "Re", "Mi", "Fa", "So", "La", "Ti", "Do",
+];
+
+const keyMap = [
+    ["Q", "W", "E", "R", "T", "Y", "U"],
+    ["A", "S", "D", "F", "G", "H", "J"],
+    ["Z", "X", "C", "V", "B", "N", "M"]
+]
+
+</script>
+
+<style scoped>
+span {
+    font-weight: 600;
+}
+</style>

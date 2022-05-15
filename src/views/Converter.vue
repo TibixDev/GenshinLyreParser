@@ -26,7 +26,8 @@
                 @click="drawExample(lyreCanvas)"
             >Draw Example & Note Grid</button>
         </div>
-            <p class="text-semibold text-2xl my-2">Notes: <strong>{{ noteHits.join(" ") }}</strong></p>
+        <p class="text-semibold text-3xl mt-5 mb-3 border-b-4 border-indigo-400">Notes</p>
+        <NotesDisplay :notes="noteHits" />
     </div>
 </template>
 
@@ -43,11 +44,15 @@
 </style>
 
 <script setup>
+// Imports
 import { ref, onMounted } from 'vue';
 import lyrePlayerImg from '../assets/lyreplayer.png';
 import lyrePlayerPressedImg from '../assets/lyreplayer_pressed.png';
 import genshinLyreVid from '../assets/genshin_lit_lyre.mp4';
 import { fetchImage, deltaE } from '../utils/CanvasUtils';
+
+// Vue Imports
+import NotesDisplay from '../components/NotesDisplay.vue';
 
 // Vue will automatically assign this to the canvas
 // DOM element, since it's the same name
@@ -226,15 +231,23 @@ async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundl
 
             //console.log(`[NoteGrid] [${i+1}, ${j+1}] - ${rgb} (${similarity})`);
 
+            //* Match!
             // If the colors are similar enough, we draw the note with green
             // and add it to the note bundle, while also giving it a timeout,
             // so it won't duplicate. Otherwise draw with red.
             if (similarity < 7) {
                 ctx.fillStyle = "green";
                 console.log(`[NoteGrid] Found hit at ${noteMap[i]}${j+1}`);
-                detectedNotes.push(keyMap[i][j]);
+                //* This is legacy code for when we didn't have
+                //* a NotesDisplay component
+                //detectedNotes.push(keyMap[i][j]);
+                detectedNotes.push([i, j]);
                 noteTimeoutsRef.push({ noteIndex: `${i}-${j}`, timeout: noteTimeoutFrames });
                 console.log(`[NoteGrid] Set timeout of ${noteTimeoutFrames} frames for ${i}/${j} (${noteMap[j]}${i+1})`);
+
+                // We also update the noteCurrentFrameRef, because
+                // we expect more notes now.
+                noteCurrentFrameRef.value++;
             }
             ctx.beginPath();
             ctx.arc(pos[0], pos[1], circleFillRadius, 0, 2 * Math.PI);
@@ -257,7 +270,7 @@ async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundl
 
         // If there are any notes, we push them with the correct formatting
         if (noteBundleRef.length === 0) return;
-        noteHitsRef.push(noteBundleRef.length > 1 ? `(${noteBundleRef.join(', ')})` : noteBundleRef[0]);
+        noteHitsRef.push(noteBundleRef.length > 1 ? [...noteBundleRef] : noteBundleRef[0]);
 
         // We empty the array, this is the only way that works
         // when trying to keep the reference type.
