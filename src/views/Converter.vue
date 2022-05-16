@@ -9,8 +9,8 @@
             <canvas
                 id="lyre-canvas"
                 ref="lyreCanvas"
-                width="1920"
-                height="1080"
+                width="1280"
+                height="720"
                 class="rounded-md border-4 border-indigo-400 mx-auto my-3"
             >
             </canvas>
@@ -78,7 +78,10 @@ function localReset() {
 onMounted(() => {
     sanityChecks(lyreCanvas.value);
     const canvas = lyreCanvas.value;
-    const ctx = canvas.getContext('2d');
+    /**
+     * @type {CanvasRenderingContext2D}
+     */
+    const ctx = canvas.getContext('2d', { alpha: false });
     const video = lyreVideo.value;
 
     let shouldScan = false;
@@ -141,7 +144,7 @@ async function drawExample(canvas) {
     const image = await fetchImage(lyrePlayerPressedImg);
 
     // Displaying the image
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
@@ -163,8 +166,11 @@ async function drawExample(canvas) {
  * @param {*} [frameBundleSize=3] - The amount of frames it takes for a `noteBundle` to be assembled
  */
 async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundleRef, noteCurrentFrameRef, frameBundleSize = 5) {
+    // Performance measure init
+    const startTime = performance.now();
+    
     // Getting context
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
     //ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Clearing timeouts
@@ -281,5 +287,8 @@ async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundl
     } else {
         noteCurrentFrameRef.value--;
     }
+
+    const endTime = performance.now();
+    console.log(`[NoteGrid] Time: ${(endTime - startTime).toFixed(2)}ms`);
 }
 </script>

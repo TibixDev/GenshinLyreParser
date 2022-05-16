@@ -1,12 +1,12 @@
 <template>
     <template v-for="note, noteIndex in notes" :key="noteIndex">
-        <span v-if="typeof note[0] === 'number'" :class="constructNoteClass(note)">
+        <span v-if="typeof note[0] === 'number'" :class="getNoteClass(note)">
             {{ constructNote(note) + " "}} 
         </span>
         <span v-else>
             (
             <template v-for="subNote, subNoteIndex in note" :key="subNoteIndex">
-                <span :class="constructNoteClass(subNote)">
+                <span :class="getNoteClass(subNote)">
                     {{ constructNote(subNote) }}
                 </span>
                 <template v-if="subNoteIndex !== note.length - 1">, </template>
@@ -30,6 +30,12 @@ const props = defineProps({
     }
 });
 
+/**
+ * Constructs a note string based on the
+ * display type, for example for PC or Mobile.
+ * @param {Number[]} note 
+ * @param {String} displayType 
+ */
 function constructNote(note, displayType=props.displayType) {
     switch (displayType) {
         case 'pc':
@@ -45,6 +51,10 @@ function constructNote(note, displayType=props.displayType) {
     }
 }
 
+/**
+ * 
+ * @param {Number[]} note 
+ */
 function constructNoteClass(note) {
     const colorMap = ["teal", "cyan", "sky"]
     return `text-${colorMap[note[0]]}-${note[1]+1}00`;
@@ -54,10 +64,35 @@ function constructNoteClass(note) {
     // text-sky-100 text-sky-200 text-sky-300 text-sky-400 text-sky-500 text-sky-600 text-sky-700 text-sky-800 text-sky-900
 }
 
+// We pre-generate the classlist, in order to
+// avoid the need to do this every time we render.
+let noteClassListStatic = [];
+for (let i = 0; i < 3; i++) {
+    let listRow = [];
+    for (let j = 0; j < 8; j++) {
+        listRow.push(constructNoteClass([i, j]));
+    }
+    noteClassListStatic.push(listRow);
+}
+
+/**
+ * Gets the color class for a note.
+ * @param {Number[]} note 
+ */
+function getNoteClass(note) {
+    return noteClassListStatic[note[0]][note[1]];
+}
+
+/**
+ * Maps a note to a music note.
+ */
 const noteMap = [
     "Do", "Re", "Mi", "Fa", "So", "La", "Ti", "Do",
 ];
 
+/**
+ * Maps a note array to a key on the keyboard.
+ */
 const keyMap = [
     ["Q", "W", "E", "R", "T", "Y", "U"],
     ["A", "S", "D", "F", "G", "H", "J"],
