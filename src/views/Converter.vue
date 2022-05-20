@@ -19,15 +19,29 @@
             <button class="lyre-button">Browse MP4</button>
             <button
                 class="lyre-button"
+                @click="resetNotes()"
+            >Reset</button>
+            <button
+                class="lyre-button hidden"
                 @click="sanityChecks(lyreCanvas)"
             >Canvas Sanity Check</button>
             <button
-                class="lyre-button"
+                class="lyre-button hidden"
                 @click="drawExample(lyreCanvas)"
             >Draw Example & Note Grid</button>
+            <select
+                name="noteType"
+                v-model="noteType"
+                class="bg-indigo-400 text-white rounded-lg px-2 py-4"
+            >
+                <option value="pc">PC (Keyboard)</option>
+                <option value="mobile">Mobile (Raw Notes)</option>
+                <option disabled value="ps">Playstation (TBD)</option>
+                <option disabled value="xbox">Xbox (TBD)</option>
+            </select>
         </div>
         <p class="text-semibold text-3xl mt-5 mb-3 border-b-4 border-indigo-400">Notes</p>
-        <NotesDisplay :notes="noteHits" />
+        <NotesDisplay :notes="noteHits" :noteType="noteType" />
     </div>
 </template>
 
@@ -44,31 +58,36 @@
 </style>
 
 <script setup>
-// Imports
+// Vue Imports
 import { ref, onMounted } from 'vue';
+import NotesDisplay from '../components/NotesDisplay.vue';
+
+// Imports
 import lyrePlayerImg from '../assets/lyreplayer.png';
 import lyrePlayerPressedImg from '../assets/lyreplayer_pressed.png';
 import genshinLyreVid from '../assets/genshin_lit_lyre.mp4';
 import { fetchImage, deltaE } from '../utils/CanvasUtils';
 
-// Vue Imports
-import NotesDisplay from '../components/NotesDisplay.vue';
-
-// Vue will automatically assign this to the canvas
-// DOM element, since it's the same name
+// DOM ref bindings
+// ^ Vue will automatically assign this to the canvas
+// ^ DOM element, since it's the same name
 const lyreCanvas = ref(null);
 const lyreVideo = ref(null);
 
+// Note detection variables
 let noteHits = ref([]);
 let noteTimeouts = [];
 let noteBundle = [];
 let noteCurrentFrame = ref(0);
 
+// Option variables
+let noteType = ref('pc');
+
 /**
  * Resets all the global values associated
  * with the note grid.
  */
-function localReset() {
+function resetNotes() {
     noteHits.value = [];
     noteTimeouts = [];
     noteBundle = [];
@@ -138,7 +157,7 @@ function sanityChecks(canvas) {
  * @param {HTMLCanvasElement} canvas
  */
 async function drawExample(canvas) {
-    localReset();
+    resetNotes();
 
     // Fetching the image
     const image = await fetchImage(lyrePlayerPressedImg);

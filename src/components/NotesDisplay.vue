@@ -1,4 +1,5 @@
 <template>
+    <p v-if="notes.length === 0" class="italic text-gray-400">Waiting...</p>
     <template v-for="note, noteIndex in notes" :key="noteIndex">
         <span v-if="typeof note[0] === 'number'" :class="getNoteClass(note)">
             {{ constructNote(note) + " "}} 
@@ -23,7 +24,7 @@ const props = defineProps({
         type: Array,
         default: () => []
     },
-    displayType: {
+    noteType: {
         // can be pc, mobile, xbox, ps
         type: String,
         default: 'mobile'
@@ -34,10 +35,10 @@ const props = defineProps({
  * Constructs a note string based on the
  * display type, for example for PC or Mobile.
  * @param {Number[]} note 
- * @param {String} displayType 
+ * @param {String} noteType 
  */
-function constructNote(note, displayType=props.displayType) {
-    switch (displayType) {
+function constructNote(note, noteType=props.noteType) {
+    switch (noteType) {
         case 'pc':
             return keyMap[note[0]][note[1]];
         case 'mobile':
