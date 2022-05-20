@@ -2,10 +2,9 @@
 <template>
     <div class="container mx-auto text-xl p-5">
         <h1 class="text-4xl font-semibold border-b-2 border-indigo-500 pb-2">Genshin Lyre Parser (Alpha)</h1>
+        <p class="italic text-gray-500">🎵 Now parsing: [<b>{{ videoSource }}</b>]</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 items-center my-5 gap-4">
-            <video controls ref="lyreVideo">
-                <source :src="genshinLyreVid" type="video/mp4">
-            </video>
+            <video controls ref="lyreVideo" :src="videoSource"></video>
             <canvas
                 id="lyre-canvas"
                 ref="lyreCanvas"
@@ -16,11 +15,33 @@
             </canvas>
         </div>
         <div class="flex flex-col sm:flex-row gap-4 sm:items-center">
-            <button class="lyre-button">Browse MP4</button>
+            <button
+                class="lyre-button"
+                @click="toggleFileSelect(videoFilePicker)"
+            >
+                <VideoCameraIcon class="button-icon"/>
+                Browse Video
+            </button>
+            <input
+                type="file"
+                accept="video/*"
+                ref="videoFilePicker"
+                class="hidden"
+                @change="processVideoFile">
             <button
                 class="lyre-button"
                 @click="resetNotes()"
-            >Reset</button>
+            >
+                <XIcon class="button-icon"/>
+                Reset
+            </button>
+            <button
+                class="lyre-button"
+                @click="userVideoSource = null"
+            >
+                <XIcon class="button-icon"/>
+                Reset Video
+            </button>
             <button
                 class="lyre-button hidden"
                 @click="sanityChecks(lyreCanvas)"
@@ -55,11 +76,15 @@
     @apply bg-violet-500 text-white p-4 rounded-xl shadow-lg transition ease-in-out duration-500
     hover:bg-violet-600;
 }
+
+.button-icon {
+    @apply h-7 w-7 inline;
+}
 </style>
 
 <script setup>
 // Vue Imports
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import NotesDisplay from '../components/NotesDisplay.vue';
 
 // Imports
@@ -68,11 +93,19 @@ import lyrePlayerPressedImg from '../assets/lyreplayer_pressed.png';
 import genshinLyreVid from '../assets/genshin_lit_lyre.mp4';
 import { fetchImage, deltaE } from '../utils/CanvasUtils';
 
+// HeroIcon Imports
+import { VideoCameraIcon, XIcon } from '@heroicons/vue/outline';
+
 // DOM ref bindings
 // ^ Vue will automatically assign this to the canvas
 // ^ DOM element, since it's the same name
 const lyreCanvas = ref(null);
 const lyreVideo = ref(null);
+const videoFilePicker = ref(null);
+
+// Video source variables
+let userVideoSource = ref(null);
+let videoSource = computed(() => userVideoSource.value || genshinLyreVid);
 
 // Note detection variables
 let noteHits = ref([]);
@@ -124,12 +157,6 @@ onMounted(() => {
 const noteMap = [
     "Do", "Re", "Mi", "Fa", "So", "La", "Ti", "Do",
 ];
-
-const keyMap = [
-    ["Q", "W", "E", "R", "T", "Y", "U"],
-    ["A", "S", "D", "F", "G", "H", "J"],
-    ["Z", "X", "C", "V", "B", "N", "M"]
-]
 
 /**
  * This is the function helps you check if the canvas size
@@ -309,5 +336,25 @@ async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundl
 
     const endTime = performance.now();
     console.log(`[NoteGrid] Time: ${(endTime - startTime).toFixed(2)}ms`);
+}
+
+/**
+ * Toggles the file select with a simulated click
+ */
+function toggleFileSelect(element) {
+    element.click();
+}
+
+/**
+ * Changes the video source when user selects a new video
+ * to be scanned for notes.
+ * (Not modular)
+ * @param {*} event 
+ */
+function processVideoFile(event) {
+    console.log(`[VideoFile] Processing video file...`);
+    const file = event.target.files[0];
+    console.log(`[VideoFile] Type: ${file.type}`);
+    userVideoSource.value = URL.createObjectURL(file);
 }
 </script>
