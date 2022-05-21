@@ -1,5 +1,42 @@
 
 <template>
+    <!-- Song Save Modal -->
+    <vue-final-modal
+        v-model="showSaveModal"
+        name="saveSongModal"
+        classes="modal-container"
+        content-class="modal-content"
+    >
+        <div class="bg-gray-600 p-4 rounded-lg">
+            <div class="flex flex-row justify-between items-center border-b-2 border-indigo-400 mb-3 pb-1">
+                <div class="flex flex-row items-center gap-2">
+                    <SaveIcon class="h-8 w-8"></SaveIcon>
+                    <h1 class="modal__title">
+                        Save Song
+                    </h1>
+                </div>
+                <button>
+                    <XIcon
+                        class="h-7 w-7 bg-red-500 rounded-full p-1 hover:bg-red-600 transition duration-150"
+                        @click="showSaveModal = !showSaveModal"
+                    ></XIcon>
+                </button>
+            </div>
+            <div class="modal__content">
+                <label for="songName">Song Title</label>
+                <input type="text" id="songName" class="save-input">
+                <label for="noteContainer" class="pt-3">Notes</label>
+                <div class="bg-gray-700 p-1 rounded-md">
+                    <NotesDisplay :notes="noteHits" :noteType="noteType" />
+                </div>
+                <button class="lyre-button mt-4 text-xl">
+                    <SaveIcon class="button-icon"></SaveIcon>
+                    <span class="ml-1">Save</span>
+                </button>
+            </div>
+        </div>
+    </vue-final-modal>
+    <!-- Template content -->
     <div class="container mx-auto text-xl p-5">
         <h1 class="text-4xl font-semibold border-b-2 border-indigo-500 pb-2">Genshin Lyre Parser (Alpha)</h1>
         <p class="italic text-gray-500 truncate">🎵 Now parsing: [<b>{{ videoSource }}</b>]</p>
@@ -43,17 +80,19 @@
                 Reset Video
             </button>
             <button
-                class="lyre-button hidden"
+                class="lyre-button"
                 @click="sanityChecks(lyreCanvas)"
+                v-if="debug"
             >Canvas Sanity Check</button>
             <button
-                class="lyre-button hidden"
+                class="lyre-button"
                 @click="drawExample(lyreCanvas)"
+                v-if="debug"
             >Draw Example & Note Grid</button>
             <select
                 name="noteType"
                 v-model="noteType"
-                class="bg-indigo-400 text-white rounded-lg px-2 py-4"
+                class="bg-indigo-400 text-white rounded-lg px-2 py-3"
             >
                 <option value="pc">PC (Keyboard)</option>
                 <option value="mobile">Mobile (Raw Notes)</option>
@@ -61,7 +100,17 @@
                 <option disabled value="xbox">Xbox (TBD)</option>
             </select>
         </div>
-        <p class="text-semibold text-3xl mt-5 mb-3 border-b-4 border-indigo-400">Notes</p>
+        <div class="mt-5 mb-3 border-b-4 border-indigo-400 flex gap-4 items-center">
+            <p class="text-3xl">Notes</p>
+            <button
+                v-if="noteHits.length > 0"
+                class="save-button my-1 flex flex-row items-center gap-1 px-3"
+                @click="showSaveModal = !showSaveModal"
+            >
+                <SaveIcon class="h-7 w-7 mb-0.5"></SaveIcon>
+                Save
+            </button>
+        </div>
         <NotesDisplay :notes="noteHits" :noteType="noteType" />
     </div>
 </template>
@@ -73,18 +122,47 @@
 }
 
 .lyre-button {
-    @apply bg-violet-500 text-white p-4 rounded-xl shadow-lg transition ease-in-out duration-500
+    @apply bg-violet-500 text-white px-4 py-3 rounded-xl shadow-lg transition ease-in-out duration-300
+    hover:bg-violet-600 flex flex-row items-center gap-2;
+}
+
+.save-button {
+    @apply bg-violet-500 text-white py-1 px-2 rounded-md shadow-md transition ease-in-out duration-150
     hover:bg-violet-600;
 }
 
 .button-icon {
-    @apply h-7 w-7 inline;
+    @apply h-7 w-7;
+}
+
+.save-input {
+    @apply rounded-md text-lg px-2 py-1 border-2 border-indigo-400 text-black;
+}
+
+.modal-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  @apply max-w-lg px-2;
+  margin: auto;
+}
+
+/* Modal */
+.modal__content {
+  display: flex;
+  flex-direction: column;
+  width: auto;
+}
+.modal__title {
+  font-size: 1.7rem;
+  font-weight: 500;
 }
 </style>
 
 <script setup>
 // Vue Imports
 import { ref, onMounted, computed } from 'vue';
+import { VueFinalModal } from 'vue-final-modal'
 import NotesDisplay from '../components/NotesDisplay.vue';
 
 // Imports
@@ -94,7 +172,7 @@ import genshinLyreVid from '../assets/genshin_lit_lyre.mp4';
 import { fetchImage, deltaE } from '../utils/CanvasUtils';
 
 // HeroIcon Imports
-import { VideoCameraIcon, XIcon } from '@heroicons/vue/outline';
+import { VideoCameraIcon, XIcon, SaveIcon } from '@heroicons/vue/outline';
 
 // DOM ref bindings
 // ^ Vue will automatically assign this to the canvas
@@ -115,6 +193,10 @@ let noteCurrentFrame = ref(0);
 
 // Option variables
 let noteType = ref('pc');
+let debug = ref(false);
+
+// Modal variables
+let showSaveModal = ref(false);
 
 /**
  * Resets all the global values associated
@@ -299,7 +381,8 @@ async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundl
 
                 // We also update the noteCurrentFrameRef, because
                 // we expect more notes now.
-                noteCurrentFrameRef.value++;
+                //noteCurrentFrameRef.value++;
+                noteCurrentFrameRef.value = frameBundleSize;
             }
             ctx.beginPath();
             ctx.arc(pos[0], pos[1], circleFillRadius, 0, 2 * Math.PI);
