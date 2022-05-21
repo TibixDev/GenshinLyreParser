@@ -1,21 +1,37 @@
 <template>
     <p v-if="notes.length === 0" class="italic text-gray-400">Waiting...</p>
-    <template v-for="note, noteIndex in notes" :key="noteIndex">
-        <span v-if="typeof note[0] === 'number'" :class="getNoteClass(note)">
-            {{ constructNote(note) + " "}} 
-        </span>
-        <span v-else class="whitespace-nowrap">
-            (
-            <template v-for="subNote, subNoteIndex in note" :key="subNoteIndex">
-                <span :class="getNoteClass(subNote)">
-                    {{ constructNote(subNote) }}
-                </span>
-                <template v-if="subNoteIndex !== note.length - 1">, </template>
-            </template>
-            )
-        </span>
-    </template>
+    <TransitionGroup name="note">
+        <template v-for="note, noteIndex in notes" :key="noteIndex">
+            <span v-if="typeof note[0] === 'number'" :class="getNoteClass(note)">
+                {{ constructNote(note) + " "}} 
+            </span>
+            <span v-else class="whitespace-nowrap">
+                (
+                <template v-for="subNote, subNoteIndex in note" :key="subNoteIndex">
+                    <span :class="getNoteClass(subNote)">
+                        {{ constructNote(subNote) }}
+                    </span>
+                    <template v-if="subNoteIndex !== note.length - 1">, </template>
+                </template>
+                )
+            </span>
+        </template>
+    </TransitionGroup>
 </template>
+
+<style scoped>
+span {
+    font-weight: 600;
+}
+.note-enter-active,
+.note-leave-active {
+  transition: all 0.3s ease;
+}
+.note-enter-from,
+.note-leave-to {
+  opacity: 0;
+}
+</style>
 
 <script setup>
 
@@ -101,9 +117,3 @@ const keyMap = [
 ]
 
 </script>
-
-<style scoped>
-span {
-    font-weight: 600;
-}
-</style>
