@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@heroicons/vue": "^1.0.6",
-    "vue": "^3.2.25"
+    "vue": "^3.2.25",
+    "vue-final-modal": "^3.4.4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.3.3",
