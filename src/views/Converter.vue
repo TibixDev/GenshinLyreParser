@@ -67,12 +67,20 @@
             <VideoCameraIcon class="button-icon"/>
             Browse Video
         </button>
+        <div
+            class="border-2 border-indigo-500 text-indigo-500 
+                   border-dashed py-2 px-5 rounded-md hidden sm:block"
+            @drop="processVideoFileDrop"
+            @dragover="allowDrop"
+        >
+            <p>Drop files here!</p>
+        </div>
         <input
             type="file"
             accept="video/*"
             ref="videoFilePicker"
             class="hidden"
-            @change="processVideoFile">
+            @change="processVideoFileSelect">
         <button
             class="lyre-button"
             @click="resetNotes()"
@@ -443,10 +451,49 @@ function toggleFileSelect(element) {
  * (Not modular)
  * @param {*} event 
  */
-function processVideoFile(event) {
+function processVideoFileSelect(event) {
     console.log(`[VideoFile] Processing video file...`);
     const file = event.target.files[0];
     console.log(`[VideoFile] Type: ${file.type}`);
     userVideoSource.value = URL.createObjectURL(file);
+}
+
+/**
+ * Processes the dropped file and if it is
+ * a video, it sets the video source to the
+ * dropped file.
+ * @param {*} event 
+ */
+function processVideoFileDrop(event) {
+    console.log(`[FileDrop] Detected dropped file...`);
+    event.preventDefault();
+    if (event.dataTransfer.items) {
+        // Use DataTransferItemList interface to access the file(s)
+        if (event.dataTransfer.items[0].kind === 'file') {
+            const file = event.dataTransfer.items[0].getAsFile();
+            console.log(`[FileDrop] Type: ${file.type}`);
+            if (file.type.includes("video")) {
+                console.log(`[FileDrop] Setting video source to ${file.name}`);
+                userVideoSource.value = URL.createObjectURL(file);
+            }
+        }
+    } else {
+        // Use DataTransfer interface to access the file(s)
+        const file = event.dataTransfer.files[0];
+        console.log(`[FileDrop] Type: ${file.type}`);
+        if (file.type.includes("video")) {
+            console.log(`[FileDrop] Setting video source to ${file.name}`);
+            userVideoSource.value = URL.createObjectURL(file);
+        }
+    }
+}
+
+/**
+ * Allows a file drop by disabling the
+ * default behavior of the browser.
+ * @param {*} event 
+ */
+function allowDrop(event) {
+    event.preventDefault();
 }
 </script>
