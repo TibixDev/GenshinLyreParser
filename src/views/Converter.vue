@@ -23,96 +23,103 @@
                 </button>
             </div>
             <div class="modal__content">
-                <label for="songName">Song Title</label>
-                <input type="text" id="songName" class="save-input">
+                <label for="songName">Song Title <span class="text-red-500 font-bold">(*)</span></label>
+                <input
+                    type="text"
+                    id="songName"
+                    class="save-input"
+                    v-model="songTitle"
+                >
                 <label for="noteContainer" class="pt-3">Notes</label>
-                <div class="bg-gray-700 p-1 rounded-md">
+                <div class="bg-gray-700 p-2 rounded-md max-h-64 overflow-y-auto">
                     <NotesDisplay :notes="noteHits" :noteType="noteType" />
                 </div>
-                <button class="lyre-button mt-4 text-xl">
+                <button
+                    v-if="songTitle.length > 0"
+                    class="lyre-button mt-4 text-xl max-w-1/2 mx-auto"
+                    @click="saveSong(songTitle, noteHits); showSaveModal = !showSaveModal"
+                >
                     <SaveIcon class="button-icon"></SaveIcon>
                     <span class="ml-1">Save</span>
                 </button>
+                <p v-else class="py-2 font-bold text-red-400">Please fill out all the fields to save the song!</p>
             </div>
         </div>
     </vue-final-modal>
     <!-- Template content -->
-    <div class="container mx-auto text-xl p-5">
-        <h1 class="text-4xl font-semibold border-b-2 border-indigo-500 pb-2">Genshin Lyre Parser (Alpha)</h1>
-        <p class="italic text-gray-500 truncate">🎵 Now parsing: [<b>{{ videoSource }}</b>]</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 items-center my-5 gap-4">
-            <video controls ref="lyreVideo" :src="videoSource"></video>
-            <canvas
-                id="lyre-canvas"
-                ref="lyreCanvas"
-                width="1280"
-                height="720"
-                class="rounded-md border-4 border-indigo-400 mx-auto my-3"
-            >
-            </canvas>
-        </div>
-        <div class="flex flex-col sm:flex-row gap-4 sm:items-center">
-            <button
-                class="lyre-button"
-                @click="toggleFileSelect(videoFilePicker)"
-            >
-                <VideoCameraIcon class="button-icon"/>
-                Browse Video
-            </button>
-            <input
-                type="file"
-                accept="video/*"
-                ref="videoFilePicker"
-                class="hidden"
-                @change="processVideoFile">
-            <button
-                class="lyre-button"
-                @click="resetNotes()"
-            >
-                <XIcon class="button-icon"/>
-                Reset
-            </button>
-            <button
-                class="lyre-button"
-                @click="userVideoSource = null"
-            >
-                <XIcon class="button-icon"/>
-                Reset Video
-            </button>
-            <button
-                class="lyre-button"
-                @click="sanityChecks(lyreCanvas)"
-                v-if="debug"
-            >Canvas Sanity Check</button>
-            <button
-                class="lyre-button"
-                @click="drawExample(lyreCanvas)"
-                v-if="debug"
-            >Draw Example & Note Grid</button>
-            <select
-                name="noteType"
-                v-model="noteType"
-                class="bg-indigo-400 text-white rounded-lg px-2 py-3"
-            >
-                <option value="pc">PC (Keyboard)</option>
-                <option value="mobile">Mobile (Raw Notes)</option>
-                <option disabled value="ps">Playstation (TBD)</option>
-                <option disabled value="xbox">Xbox (TBD)</option>
-            </select>
-        </div>
-        <div class="mt-5 mb-3 border-b-4 border-indigo-400 flex gap-4 items-center">
-            <p class="text-3xl">Notes</p>
-            <button
-                v-if="noteHits.length > 0"
-                class="save-button my-1 flex flex-row items-center gap-1 px-3"
-                @click="showSaveModal = !showSaveModal"
-            >
-                <SaveIcon class="h-7 w-7 mb-0.5"></SaveIcon>
-                Save
-            </button>
-        </div>
-        <NotesDisplay :notes="noteHits" :noteType="noteType" />
+    <p class="italic text-gray-500 truncate">🎵 Now parsing: [<b>{{ videoSource }}</b>]</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 items-center my-5 gap-4">
+        <video controls ref="lyreVideo" :src="videoSource"></video>
+        <canvas
+            id="lyre-canvas"
+            ref="lyreCanvas"
+            width="1280"
+            height="720"
+            class="rounded-md border-4 border-indigo-400 mx-auto my-3"
+        >
+        </canvas>
     </div>
+    <div class="flex flex-col sm:flex-row gap-4 sm:items-center">
+        <button
+            class="lyre-button"
+            @click="toggleFileSelect(videoFilePicker)"
+        >
+            <VideoCameraIcon class="button-icon"/>
+            Browse Video
+        </button>
+        <input
+            type="file"
+            accept="video/*"
+            ref="videoFilePicker"
+            class="hidden"
+            @change="processVideoFile">
+        <button
+            class="lyre-button"
+            @click="resetNotes()"
+        >
+            <XIcon class="button-icon"/>
+            Reset
+        </button>
+        <button
+            class="lyre-button"
+            @click="userVideoSource = null"
+        >
+            <XIcon class="button-icon"/>
+            Reset Video
+        </button>
+        <button
+            class="lyre-button"
+            @click="sanityChecks(lyreCanvas)"
+            v-if="debug"
+        >Canvas Sanity Check</button>
+        <button
+            class="lyre-button"
+            @click="drawExample(lyreCanvas)"
+            v-if="debug"
+        >Draw Example & Note Grid</button>
+        <select
+            name="noteType"
+            v-model="noteType"
+            class="bg-indigo-400 text-white rounded-lg px-2 py-3"
+        >
+            <option value="pc">PC (Keyboard)</option>
+            <option value="mobile">Mobile (Raw Notes)</option>
+            <option disabled value="ps">Playstation (TBD)</option>
+            <option disabled value="xbox">Xbox (TBD)</option>
+        </select>
+    </div>
+    <div class="mt-5 mb-3 border-b-4 border-indigo-400 flex gap-4 items-center">
+        <p class="text-3xl">Notes</p>
+        <button
+            v-if="noteHits.length > 0"
+            class="save-button my-1 flex flex-row items-center gap-1 px-3"
+            @click="showSaveModal = !showSaveModal"
+        >
+            <SaveIcon class="h-7 w-7 mb-0.5"></SaveIcon>
+            Save
+        </button>
+    </div>
+    <NotesDisplay :notes="noteHits" :noteType="noteType" />
 </template>
 
 <style>
@@ -163,13 +170,14 @@
 // Vue Imports
 import { ref, onMounted, computed } from 'vue';
 import { VueFinalModal } from 'vue-final-modal'
-import NotesDisplay from '../components/NotesDisplay.vue';
+import NotesDisplay from '@components/NotesDisplay.vue';
 
 // Imports
-import lyrePlayerImg from '../assets/lyreplayer.png';
-import lyrePlayerPressedImg from '../assets/lyreplayer_pressed.png';
-import genshinLyreVid from '../assets/genshin_lit_lyre.mp4';
-import { fetchImage, deltaE } from '../utils/CanvasUtils';
+import lyrePlayerImg from '@assets/lyreplayer.png';
+import lyrePlayerPressedImg from '@assets/lyreplayer_pressed.png';
+import genshinLyreVid from '@assets/genshin_lit_lyre.mp4';
+import { fetchImage, deltaE } from '@utils/CanvasUtils';
+import { saveSong } from '@utils/SongStorage'
 
 // HeroIcon Imports
 import { VideoCameraIcon, XIcon, SaveIcon } from '@heroicons/vue/outline';
@@ -197,6 +205,7 @@ let debug = ref(false);
 
 // Modal variables
 let showSaveModal = ref(false);
+let songTitle = ref('');
 
 /**
  * Resets all the global values associated
