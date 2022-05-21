@@ -2,7 +2,7 @@
 <template>
     <div class="container mx-auto text-xl p-5">
         <h1 class="text-4xl font-semibold border-b-2 border-indigo-500 pb-2">Genshin Lyre Parser (Alpha)</h1>
-        <p class="italic text-gray-500">🎵 Now parsing: [<b>{{ videoSource }}</b>]</p>
+        <p class="italic text-gray-500 truncate">🎵 Now parsing: [<b>{{ videoSource }}</b>]</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 items-center my-5 gap-4">
             <video controls ref="lyreVideo" :src="videoSource"></video>
             <canvas
