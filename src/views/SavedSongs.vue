@@ -1,5 +1,15 @@
 <template>
     <div class="flex flex-col gap-4">
+        <select
+            name="noteType"
+            v-model="noteType"
+            class="bg-indigo-400 text-white rounded-lg px-2 py-3"
+        >
+            <option value="pc">PC (Keyboard)</option>
+            <option value="mobile">Mobile (Raw Notes)</option>
+            <option disabled value="ps">Playstation (TBD)</option>
+            <option disabled value="xbox">Xbox (TBD)</option>
+        </select>
         <div
             v-for="song, songIndex in songs"
             :key="songIndex"
@@ -16,7 +26,7 @@
                     </button>
                 </div>
             </div>
-            <NotesDisplayVue :notes="song.notes"></NotesDisplayVue>
+            <NotesDisplayVue :notes="song.notes" :noteType="noteType"></NotesDisplayVue>
         </div>
     </div>
 </template>
@@ -28,6 +38,7 @@ import { XIcon, ChevronDownIcon } from "@heroicons/vue/outline";
 import { ref } from "vue";
 
 let songs = ref(getSongs());
+let noteType = ref('pc');
 
 /**
  * Deletes a song from localStorage and

@@ -5,7 +5,7 @@
             <span v-if="typeof note[0] === 'number'" :class="getNoteClass(note)">
                 {{ constructNote(note) + " "}} 
             </span>
-            <span v-else class="whitespace-nowrap">
+            <span v-else>
                 (
                 <template v-for="subNote, subNoteIndex in note" :key="subNoteIndex">
                     <span :class="getNoteClass(subNote)">
