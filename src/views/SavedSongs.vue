@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col gap-4">
+    <div v-if="songs?.length > 0" class="flex flex-col gap-4">
         <select
             name="noteType"
             v-model="noteType"
@@ -28,6 +28,9 @@
             </div>
             <NotesDisplayVue :notes="song.notes" :noteType="noteType"></NotesDisplayVue>
         </div>
+    </div>
+    <div v-else>
+        <h1 class="text-2xl text-gray-400 text-center mt-5">It seems like nothing is here for now... Try saving some songs and they should appear here.</h1>
     </div>
 </template>
 

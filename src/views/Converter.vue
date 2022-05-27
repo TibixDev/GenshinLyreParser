@@ -59,6 +59,8 @@
         >
         </canvas>
     </div>
+
+    <!-- Buttons, selections, and drop-zones -->
     <div class="flex flex-col sm:flex-row gap-4 sm:items-center">
         <button
             class="lyre-button"
@@ -97,6 +99,13 @@
         </button>
         <button
             class="lyre-button"
+            @click="showOptions = !showOptions"
+        >
+            <CogIcon class="button-icon"/>
+            {{ showOptions ? 'Hide' : 'Show'  }} Options
+        </button>
+        <button
+            class="lyre-button"
             @click="sanityChecks(lyreCanvas)"
             v-if="debug"
         >Canvas Sanity Check</button>
@@ -116,6 +125,25 @@
             <option disabled value="xbox">Xbox (TBD)</option>
         </select>
     </div>
+
+    <!-- Options -->
+    <div v-if="showOptions">
+        <p class="mt-5 mb-3 text-3xl border-b-4 border-indigo-400">Options</p>
+        <label
+            class="inline-flex flex-row items-center"
+            for="frameBundleSizeOpt"
+            v-tooltip.right="`Controls how lenient the parser is when parsing notes groups. e.g. (Do1, So2, La3)
+                        Higher values result in more imperfectly bundled notes being bundled together.`"
+        >
+            Tolerance
+            <QuestionMarkCircleIcon class="w-6 ml-1"/>
+        </label>
+        <br>
+        <input type="range" id="frameBundleSizeOpt" min="1" max="10" v-model="frameBundleSize">
+        <b class="ml-3">({{ frameBundleSize }})</b>
+    </div>
+
+    <!-- Notes rendering-->
     <div class="mt-5 mb-3 border-b-4 border-indigo-400 flex gap-4 items-center">
         <p class="text-3xl">Notes</p>
         <button
@@ -188,7 +216,8 @@ import { fetchImage, deltaE } from '@utils/CanvasUtils';
 import { saveSong } from '@utils/SongStorage'
 
 // HeroIcon Imports
-import { VideoCameraIcon, XIcon, SaveIcon } from '@heroicons/vue/outline';
+import { VideoCameraIcon, XIcon, SaveIcon, CogIcon } from '@heroicons/vue/outline';
+import { QuestionMarkCircleIcon } from "@heroicons/vue/solid"
 
 // DOM ref bindings
 // ^ Vue will automatically assign this to the canvas
@@ -210,6 +239,8 @@ let noteCurrentFrame = ref(0);
 // Option variables
 let noteType = ref('pc');
 let debug = ref(false);
+let frameBundleSize = ref(5);
+let showOptions = ref(false);
 
 // Modal variables
 let showSaveModal = ref(false);
@@ -240,7 +271,7 @@ onMounted(() => {
         shouldScan = true;
         function step() {
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-            drawNoteDetection(canvas, noteHits.value, noteTimeouts, noteBundle, noteCurrentFrame);
+            drawNoteDetection(canvas, noteHits.value, noteTimeouts, noteBundle, noteCurrentFrame, frameBundleSize.value);
             if (shouldScan) {
                 requestAnimationFrame(step);
             }
@@ -294,7 +325,7 @@ async function drawExample(canvas) {
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
     // Drawing the notes
-    drawNoteDetection(canvas, noteHits.value, noteTimeouts, noteBundle, noteCurrentFrame);
+    drawNoteDetection(canvas, noteHits.value, noteTimeouts, noteBundle, noteCurrentFrame, frameBundleSize.value);
 }
 
 /**
@@ -307,8 +338,9 @@ async function drawExample(canvas) {
  * @param {*} noteBundleRef - Reference to the current note bundle which will be consumed
  * by adding it to `noteHitsRef` when `nodeCurrentFrameRef` reaches 0
  * @param {*} noteCurrentFrameRef - Reference to the current frame count which will be
- * consumed by incrementing it by 1 every frame until it reaches `frameBundleSize`
- * @param {*} [frameBundleSize=3] - The amount of frames it takes for a `noteBundle` to be assembled
+ * consumed by decrementing it by 1 every frame until it reaches 0, upon which it is
+ * set back to `frameBundleSizeRef`
+ * @param {*} [frameBundleSize=5] - The amount of frames it takes for a `noteBundle` to be assembled
  */
 async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundleRef, noteCurrentFrameRef, frameBundleSize = 5) {
     // Performance measure init
@@ -429,8 +461,9 @@ async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundl
         noteBundleRef = noteBundleRef.splice(0, noteBundleRef.length)
 
         console.log(`[NoteGrid] Final NoteBundle: ${noteBundleRef}`);
-        console.log(`[NoteGrid] Added bundle to noteHits`);
+        console.log(`[NoteGrid] Added bundle to noteHits, reset to ${frameBundleSize}`);
     } else {
+        //console.log(`[NoteGrid] noteCurrentFrameRef: ${noteCurrentFrameRef.value}`);
         noteCurrentFrameRef.value--;
     }
 

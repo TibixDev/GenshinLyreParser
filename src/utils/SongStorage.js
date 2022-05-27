@@ -18,7 +18,11 @@ function saveSong(title, notes) {
  * @returns {Array}
  */
 function getSongs() {
-    return JSON.parse(localStorage.getItem('songs')) || [];
+    const songs = localStorage.getItem('songs');
+    if (songs === '' || songs === null || songs === undefined) {
+        return [];
+    }
+    return JSON.parse(localStorage.getItem('songs'));
 }
 
 /**

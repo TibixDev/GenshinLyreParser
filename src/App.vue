@@ -1,5 +1,6 @@
 <script setup>
-import './index.css'
+import './index.css';
+import "floating-vue/dist/style.css";
 import Converter from '@views/Converter.vue';
 import Header from '@components/Header.vue';
 </script>
@@ -12,6 +13,7 @@ import Header from '@components/Header.vue';
 </template>
 
 <style>
+
 #app {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
