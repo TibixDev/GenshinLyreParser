@@ -472,13 +472,6 @@ async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundl
 }
 
 /**
- * Toggles the file select with a simulated click
- */
-function toggleFileSelect(element) {
-    element.click();
-}
-
-/**
  * Changes the video source when user selects a new video
  * to be scanned for notes.
  * (Not modular)
@@ -519,6 +512,13 @@ function processVideoFileDrop(event) {
             userVideoSource.value = URL.createObjectURL(file);
         }
     }
+}
+
+/**
+ * Toggles the file select with a simulated click
+ */
+function toggleFileSelect(element) {
+    element.click();
 }
 
 /**
