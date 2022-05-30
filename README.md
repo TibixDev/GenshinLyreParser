@@ -102,7 +102,7 @@ You can use this webapp on the deployed [website](https://genshin-lyre-parser.ve
 3. Build the project
    ```sh
    yarn build
-   #or
+   # or
    npm run build
    ```
 4. Deploy the `dist` folder or view it using live-server
