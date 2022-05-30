@@ -77,7 +77,6 @@ You can use this webapp on the deployed [website](https://genshin-lyre-parser.ve
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
 * node.js (LTS recommended)
 * npm
     ```sh
