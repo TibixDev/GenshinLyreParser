@@ -54,7 +54,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Genshin Lyre Parser Screenshot][genshinlyreparser-screenshot]](https://i.imgur.com/fKlS54D.jpg)
+![Genshin Lyre Parser Screenshot](https://i.imgur.com/fKlS54D.jpg)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
