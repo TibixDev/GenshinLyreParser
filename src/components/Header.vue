@@ -4,6 +4,7 @@
         <div class="flex flex-row gap-2 items-center">
             <router-link to="/" class="tab-link">Home</router-link>
             <router-link to="/saved" class="tab-link">Saved Songs</router-link>
+            <router-link to="/about" class="tab-link">About</router-link>
         </div>
     </div>
 
