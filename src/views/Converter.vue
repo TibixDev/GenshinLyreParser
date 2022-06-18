@@ -129,18 +129,13 @@
     <!-- Options -->
     <div v-if="showOptions">
         <p class="mt-5 mb-3 text-3xl border-b-4 border-indigo-400">Options</p>
-        <label
-            class="inline-flex flex-row items-center"
-            for="frameBundleSizeOpt"
-            v-tooltip.right="`Controls how lenient the parser is when parsing notes groups. e.g. (Do1, So2, La3)
-                        Higher values result in more imperfectly bundled notes being bundled together.`"
-        >
-            Tolerance
-            <QuestionMarkCircleIcon class="w-6 ml-1"/>
-        </label>
-        <br>
-        <input type="range" id="frameBundleSizeOpt" min="1" max="10" v-model="frameBundleSize">
-        <b class="ml-3">({{ frameBundleSize }})</b>
+        <Option
+            title="Tolerance"
+            description="Controls how lenient the parser is when parsing notes groups. e.g. (Do1, So2, La3).
+                         Higher values result in more imperfectly bundled notes being bundled together." 
+            :option="frameBundleSize"
+            v-model="frameBundleSize"
+        ></Option>
     </div>
 
     <!-- Notes rendering-->
@@ -207,6 +202,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { VueFinalModal } from 'vue-final-modal'
 import NotesDisplay from '@components/NotesDisplay.vue';
+import Option from '../components/Option.vue';
 
 // Imports
 import lyrePlayerImg from '@assets/lyreplayer.png';
@@ -218,6 +214,7 @@ import { saveSong } from '@utils/SongStorage'
 // HeroIcon Imports
 import { VideoCameraIcon, XIcon, SaveIcon, CogIcon } from '@heroicons/vue/outline';
 import { QuestionMarkCircleIcon } from "@heroicons/vue/solid"
+
 
 // DOM ref bindings
 // ^ Vue will automatically assign this to the canvas
@@ -239,8 +236,13 @@ let noteCurrentFrame = ref(0);
 // Option variables
 let noteType = ref('pc');
 let debug = ref(false);
-let frameBundleSize = ref(5);
 let showOptions = ref(false);
+let frameBundleSize = ref(5);
+let gridOptions = ref({
+    gridInit: [1, 1],
+    gridSpacing: [1, 1],
+})
+//let test = ref(Number(5))
 
 // Modal variables
 let showSaveModal = ref(false);
@@ -374,7 +376,7 @@ async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundl
     const canvasSize = [canvas.width, canvas.height];
     const gridInit = [canvasSize[0]*0.22, canvasSize[1]*0.66];
     const gridSize = [7, 3];
-    const gridPass = [canvasSize[0]*0.0873, canvasSize[1]*0.125];
+    const gridSpacing = [canvasSize[0]*0.0873, canvasSize[1]*0.125];
     const noteTimeoutFrames = 5;
     const circleFillRadius = canvasSize[0]*0.007;
 
@@ -382,7 +384,7 @@ async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundl
         for (let j = 0; j < gridSize[0]; j++) {
             // We define the position and pixel early, since
             // it is subject to changing after detection.
-            const pos = [j * gridPass[0] + gridInit[0], i * gridPass[1] + gridInit[1]];
+            const pos = [j * gridSpacing[0] + gridInit[0], i * gridSpacing[1] + gridInit[1]];
             const pixel = ctx.getImageData(pos[0], pos[1], 1, 1).data;
             
             // We optionally offset the position to be at the center of the note
