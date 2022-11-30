@@ -121,8 +121,6 @@
         >
             <option value="pc">PC (Keyboard)</option>
             <option value="mobile">Mobile (Raw Notes)</option>
-            <option disabled value="ps">Playstation (TBD)</option>
-            <option disabled value="xbox">Xbox (TBD)</option>
         </select>
     </div>
 
@@ -135,6 +133,42 @@
                          Higher values result in more imperfectly bundled notes being bundled together." 
             :option="frameBundleSize"
             v-model="frameBundleSize"
+        ></Option>
+        <Option
+            title="Grid Start X"
+            description="Where the note grid begins on the X axis." 
+            :option="gridModifiers.gridInit[0]"
+            v-model="gridModifiers.gridInit[0]"
+            :min="-2.5"
+            :max="2.5"
+            :step="0.0125"
+        ></Option>
+        <Option
+            title="Grid Start Y"
+            description="Where the note grid begins on the Y axis." 
+            :option="gridModifiers.gridInit[1]"
+            v-model="gridModifiers.gridInit[1]"
+            :min="-2.5"
+            :max="2.5"
+            :step="0.0125"
+        ></Option>
+        <Option
+            title="Grid Spacing X"
+            description="How much space there is between the note grid elements on the X axis." 
+            :option="gridModifiers.gridSpacing[0]"
+            v-model="gridModifiers.gridSpacing[0]"
+            :min="-2.5"
+            :max="2.5"
+            :step="0.0125"
+        ></Option>
+        <Option
+            title="Grid Spacing Y"
+            description="How much space there is between the note grid elements on the Y axis." 
+            :option="gridModifiers.gridSpacing[1]"
+            v-model="gridModifiers.gridSpacing[1]"
+            :min="-2.5"
+            :max="2.5"
+            :step="0.0125"
         ></Option>
     </div>
 
@@ -199,7 +233,7 @@
 
 <script setup>
 // Vue Imports
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { VueFinalModal } from 'vue-final-modal'
 import NotesDisplay from '@components/NotesDisplay.vue';
 import Option from '../components/Option.vue';
@@ -213,7 +247,6 @@ import { saveSong } from '@utils/SongStorage'
 
 // HeroIcon Imports
 import { VideoCameraIcon, XIcon, SaveIcon, CogIcon } from '@heroicons/vue/outline';
-import { QuestionMarkCircleIcon } from "@heroicons/vue/solid"
 
 
 // DOM ref bindings
@@ -238,11 +271,10 @@ let noteType = ref('pc');
 let debug = ref(false);
 let showOptions = ref(false);
 let frameBundleSize = ref(5);
-let gridOptions = ref({
+let gridModifiers = ref({
     gridInit: [1, 1],
     gridSpacing: [1, 1],
 })
-//let test = ref(Number(5))
 
 // Modal variables
 let showSaveModal = ref(false);
@@ -258,6 +290,20 @@ function resetNotes() {
     noteBundle = [];
     noteCurrentFrame.value = 0;
 }
+
+// We watch for gridModifiers to change, because
+// when it does change, we need to redraw the note
+// detection, so the user can see the changes too.
+watch(gridModifiers.value, (data) => {
+    const canvas = lyreCanvas.value;
+    /**
+     * @type {CanvasRenderingContext2D}
+     */
+    const ctx = canvas.getContext('2d', { alpha: false });
+    const video = lyreVideo.value;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    drawNoteDetection(canvas, noteHits.value, noteTimeouts, noteBundle, noteCurrentFrame, frameBundleSize.value);
+})
 
 onMounted(() => {
     sanityChecks(lyreCanvas.value);
@@ -374,9 +420,15 @@ async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundl
     ctx.fillStyle = "red"
     const desiredRGB = [139, 237, 214];
     const canvasSize = [canvas.width, canvas.height];
-    const gridInit = [canvasSize[0]*0.22, canvasSize[1]*0.66];
+    const gridInit = [
+        canvasSize[0] * 0.22 * gridModifiers.value.gridInit[0],
+        canvasSize[1] * 0.66 * gridModifiers.value.gridInit[1]
+    ];
     const gridSize = [7, 3];
-    const gridSpacing = [canvasSize[0]*0.0873, canvasSize[1]*0.125];
+    const gridSpacing = [
+        canvasSize[0] * 0.0873 * gridModifiers.value.gridSpacing[0],
+        canvasSize[1] * 0.125 * gridModifiers.value.gridSpacing[1]
+    ];
     const noteTimeoutFrames = 5;
     const circleFillRadius = canvasSize[0]*0.007;
 

@@ -9,7 +9,7 @@
             <QuestionMarkCircleIcon class="w-6 ml-1"/>
         </label>
         <br>
-        <input :id="optionClass.value" type="range" :min="props.min" :max="props.max" v-model="internal" @input="handleInput()">
+        <input :id="optionClass.value" type="range" :min="props.min" :max="props.max" v-model="internal" :step="props.step" @input="handleInput()">
         <b class="ml-3">({{ props.option }})</b>
     </div>
 </template>
@@ -38,6 +38,10 @@ const props = defineProps({
     max: {
         type: Number,
         default: 10,
+    },
+    step: {
+        type: Number,
+        default: 1,
     },
 });
 
