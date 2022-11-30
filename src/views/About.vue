@@ -10,7 +10,7 @@
     </p>
     <br>
     <p>
-        Copyright © 2020 <a href="https://github.com/TibixDev">TibixDev</a>.
+        Copyright © 2022 <a href="https://github.com/TibixDev">TibixDev</a>.
         Licensed under the <a href="https://github.com/TibixDev/GenshinLyreParser/blob/main/LICENSE">MIT License</a>
     </p>
     <br>
