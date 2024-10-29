@@ -126,6 +126,29 @@
     <!-- Options -->
     <div v-if="showOptions">
         <p class="mt-5 mb-3 text-3xl border-b-4 border-indigo-400">Options</p>
+        <div class="flex flex-col gap-2 mb-4">
+            <div class="flex items-center gap-4">
+                <label for="noteColor" class="text-lg">Note Detection Color</label>
+                <div class="flex items-center gap-2">
+                    <input 
+                        type="color" 
+                        id="noteColor"
+                        v-model="noteColor"
+                        class="h-8 cursor-pointer"
+                        :title="'Current RGB: ' + desiredRGB.join(', ')"
+                    />
+                    <button 
+                        class="px-2 py-1 text-sm bg-violet-500 text-white rounded-md hover:bg-violet-600 transition-colors"
+                        @click="noteColor = '#8BEDD6'"
+                    >
+                        Reset
+                    </button>
+                </div>
+            </div>
+            <p class="text-sm text-gray-400">
+                Current RGB: {{ desiredRGB.join(', ') }}
+            </p>
+        </div>
         <Option
             title="Tolerance"
             description="Controls how lenient the parser is when parsing notes groups. e.g. (Do1, So2, La3).
@@ -274,6 +297,16 @@ let gridModifiers = ref({
     gridInit: [1, 1],
     gridSpacing: [1, 1],
 })
+let noteColor = ref('#8BEDD6');
+const desiredRGB = computed(() => {
+    // Convert hex to RGB
+    const hex = noteColor.value.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return [r, g, b];
+});
+
 
 // Modal variables
 let showSaveModal = ref(false);
@@ -305,6 +338,7 @@ watch(gridModifiers.value, (data) => {
 })
 
 onMounted(() => {
+    noteColor.value = '#8BEDD6';
     sanityChecks(lyreCanvas.value);
     const canvas = lyreCanvas.value;
     /**
@@ -417,7 +451,7 @@ async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundl
 
     // Displaying the note grid
     ctx.fillStyle = "red"
-    const desiredRGB = [139, 237, 214];
+    // const desiredRGB = [139, 237, 214];
     const canvasSize = [canvas.width, canvas.height];
     const gridInit = [
         canvasSize[0] * 0.22 * gridModifiers.value.gridInit[0],
@@ -463,7 +497,7 @@ async function drawNoteDetection(canvas, noteHitsRef, noteTimeoutsRef, noteBundl
             // 2-10: Perceptible at a glance
             // 11-49: Colors are more similar than the opposite
             // 100: Colors are exactly the opposite
-            const similarity = deltaE(rgb, desiredRGB);
+            const similarity = deltaE(rgb, desiredRGB.value);
 
             //console.log(`[NoteGrid] [${i+1}, ${j+1}] - ${rgb} (${similarity})`);
 
