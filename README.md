@@ -115,9 +115,9 @@ You can use this webapp on the deployed [website](https://genshin-lyre-parser.ve
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Improving detection accuracy
+- [x] Improving detection accuracy
+- [x] Note detection color picker
 - [ ] Exporting songs to [Genshin Music Nightly](https://genshin-music.specy.app/)
-- [ ] Expose all internal options for the user to mess with
 - [ ] The ability to modify songs manually
 
 See the [open issues](https://github.com/TibixDev/GenshinLyreParser/issues) for a full list of proposed features (and known issues).
