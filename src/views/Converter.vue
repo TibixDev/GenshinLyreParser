@@ -7,23 +7,23 @@
         classes="modal-container"
         content-class="modal-content"
     >
-        <div class="bg-gray-600 p-4 rounded-lg">
-            <div class="flex flex-row justify-between items-center border-b-2 border-indigo-400 mb-3 pb-1">
+        <div class="p-4 bg-gray-600 rounded-lg">
+            <div class="flex flex-row items-center justify-between pb-1 mb-3 border-b-2 border-indigo-400">
                 <div class="flex flex-row items-center gap-2">
-                    <SaveIcon class="h-8 w-8"></SaveIcon>
+                    <SaveIcon class="w-8 h-8"></SaveIcon>
                     <h1 class="modal__title">
                         Save Song
                     </h1>
                 </div>
                 <button>
                     <XIcon
-                        class="h-7 w-7 bg-red-500 rounded-full p-1 hover:bg-red-600 transition duration-150"
+                        class="p-1 transition duration-150 bg-red-500 rounded-full h-7 w-7 hover:bg-red-600"
                         @click="showSaveModal = !showSaveModal"
                     ></XIcon>
                 </button>
             </div>
             <div class="modal__content">
-                <label for="songName">Song Title <span class="text-red-500 font-bold">(*)</span></label>
+                <label for="songName">Song Title <span class="font-bold text-red-500">(*)</span></label>
                 <input
                     type="text"
                     id="songName"
@@ -31,12 +31,12 @@
                     v-model="songTitle"
                 >
                 <label for="noteContainer" class="pt-3">Notes</label>
-                <div class="bg-gray-700 p-2 rounded-md max-h-64 overflow-y-auto">
+                <div class="p-2 overflow-y-auto bg-gray-700 rounded-md max-h-64">
                     <NotesDisplay :notes="noteHits" :noteType="noteType" />
                 </div>
                 <button
                     v-if="songTitle.length > 0"
-                    class="lyre-button mt-4 text-xl max-w-1/2 mx-auto"
+                    class="mx-auto mt-4 text-xl lyre-button max-w-1/2"
                     @click="saveSong(songTitle, noteHits); showSaveModal = !showSaveModal"
                 >
                     <SaveIcon class="button-icon"></SaveIcon>
@@ -48,20 +48,20 @@
     </vue-final-modal>
     <!-- Template content -->
     <p class="italic text-gray-500 truncate">🎵 Now parsing: [<b>{{ videoSource }}</b>]</p>
-    <div class="grid grid-cols-1 sm:grid-cols-2 items-center my-5 gap-4">
+    <div class="grid items-center grid-cols-1 gap-4 my-5 sm:grid-cols-2">
         <video controls ref="lyreVideo" :src="videoSource"></video>
         <canvas
             id="lyre-canvas"
             ref="lyreCanvas"
             width="1280"
             height="720"
-            class="rounded-md border-4 border-indigo-400 mx-auto my-3"
+            class="mx-auto my-3 border-4 border-indigo-400 rounded-md"
         >
         </canvas>
     </div>
 
     <!-- Buttons, selections, and drop-zones -->
-    <div class="flex flex-col sm:flex-row gap-4 sm:items-center">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
         <button
             class="lyre-button"
             @click="toggleFileSelect(videoFilePicker)"
@@ -70,8 +70,7 @@
             Browse Video
         </button>
         <div
-            class="border-2 border-indigo-500 text-indigo-500 
-                   border-dashed py-2 px-5 rounded-md hidden sm:block"
+            class="hidden px-5 py-2 text-indigo-500 border-2 border-indigo-500 border-dashed rounded-md sm:block"
             @drop="processVideoFileDrop"
             @dragover="allowDrop"
         >
@@ -117,7 +116,7 @@
         <select
             name="noteType"
             v-model="noteType"
-            class="bg-indigo-400 text-white rounded-lg px-2 py-3"
+            class="px-2 py-3 text-white bg-indigo-400 rounded-lg"
         >
             <option value="pc">PC (Keyboard)</option>
             <option value="mobile">Mobile (Raw Notes)</option>
@@ -173,11 +172,11 @@
     </div>
 
     <!-- Notes rendering-->
-    <div class="mt-5 mb-3 border-b-4 border-indigo-400 flex gap-4 items-center">
+    <div class="flex items-center gap-4 mt-5 mb-3 border-b-4 border-indigo-400">
         <p class="text-3xl">Notes</p>
         <button
             v-if="noteHits.length > 0"
-            class="save-button my-1 flex flex-row items-center gap-1 px-3"
+            class="flex flex-row items-center gap-1 px-3 my-1 save-button"
             @click="showSaveModal = !showSaveModal"
         >
             <SaveIcon class="h-7 w-7 mb-0.5"></SaveIcon>
